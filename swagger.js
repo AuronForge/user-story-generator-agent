@@ -35,19 +35,50 @@ const options = {
     ],
     components: {
       schemas: {
+        TestStep: {
+          type: 'object',
+          required: ['action', 'expectedResult'],
+          properties: {
+            stepNumber: {
+              type: 'integer',
+              description: 'Step sequence number',
+              example: 1,
+            },
+            action: {
+              type: 'string',
+              description: 'Action to be performed',
+              example: 'Navigate to login page',
+            },
+            expectedResult: {
+              type: 'string',
+              description: 'Expected result after action',
+              example: 'Login page is displayed',
+            },
+            data: {
+              type: 'object',
+              description: 'Additional data for the step',
+              additionalProperties: true,
+            },
+          },
+        },
         TestScenario: {
           type: 'object',
-          required: ['title', 'description'],
+          required: ['title', 'description', 'steps'],
           properties: {
+            scenarioId: {
+              type: 'string',
+              description: 'Scenario identifier',
+              example: 'TC-001',
+            },
             title: {
               type: 'string',
               description: 'Test scenario title',
-              example: 'Login with valid credentials',
+              example: 'User Login Authentication',
             },
             description: {
               type: 'string',
               description: 'Detailed test scenario description',
-              example: 'Verify that user can login with valid email and password',
+              example: 'Verify that user can login with valid credentials',
             },
             type: {
               type: 'string',
@@ -55,27 +86,76 @@ const options = {
               description: 'Test type',
               example: 'functional',
             },
+            priority: {
+              type: 'string',
+              enum: ['high', 'medium', 'low'],
+              description: 'Test priority',
+              example: 'high',
+            },
+            preconditions: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Required preconditions',
+              example: ['User is registered', 'System is available'],
+            },
             steps: {
               type: 'array',
               items: {
-                type: 'object',
-                properties: {
-                  action: {
-                    type: 'string',
-                    example: 'Navigate to login page',
-                  },
-                  expectedResult: {
-                    type: 'string',
-                    example: 'Login page is displayed',
-                  },
-                },
+                $ref: '#/components/schemas/TestStep',
               },
               description: 'Test steps',
+              minItems: 1,
+            },
+            expectedOutcome: {
+              type: 'string',
+              description: 'Overall expected outcome',
+              example: 'User is authenticated and redirected to dashboard',
+            },
+            tags: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Tags for categorization',
+              example: ['authentication', 'security'],
+            },
+          },
+        },
+        AcceptanceCriterion: {
+          type: 'object',
+          required: ['criterion'],
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Criterion identifier',
+              example: 'AC-001',
+            },
+            criterion: {
+              type: 'string',
+              description: 'Acceptance criterion description',
+              example: 'Given I am on the login page',
+            },
+            type: {
+              type: 'string',
+              enum: ['given', 'when', 'then', 'and', 'general'],
+              description: 'Criterion type (Gherkin format)',
+              example: 'given',
             },
           },
         },
         UserStory: {
           type: 'object',
+          required: [
+            'id',
+            'title',
+            'description',
+            'priority',
+            'acceptanceCriteria',
+            'team',
+            'storyPoints',
+          ],
           properties: {
             id: {
               type: 'string',
@@ -85,30 +165,18 @@ const options = {
             title: {
               type: 'string',
               description: 'User story title',
-              example: 'User Login Authentication',
+              example: 'Implement User Login Form',
+            },
+            description: {
+              type: 'string',
+              description: 'Detailed description',
+              example: 'Create a login form with email and password fields',
             },
             story: {
               type: 'string',
               description: 'User story in standard format',
               example:
-                'As a registered user, I want to login with my credentials so that I can access my account',
-            },
-            acceptanceCriteria: {
-              type: 'array',
-              items: {
-                type: 'string',
-              },
-              description: 'List of acceptance criteria',
-              example: [
-                'Given I am on the login page',
-                'When I enter valid credentials',
-                'Then I should be redirected to dashboard',
-              ],
-            },
-            businessValue: {
-              type: 'string',
-              description: 'Business value description',
-              example: 'Enables secure user authentication and access control',
+                'As a registered user, I want to login with my credentials, so that I can access my account',
             },
             priority: {
               type: 'string',
@@ -116,15 +184,63 @@ const options = {
               description: 'Story priority',
               example: 'high',
             },
-            estimatedPoints: {
-              type: 'integer',
-              description: 'Story points estimation',
-              example: 3,
+            dependsOn: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'IDs of dependent user stories',
+              example: ['US-002', 'US-003'],
+            },
+            acceptanceCriteria: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/AcceptanceCriterion',
+              },
+              description: 'Definition of Done (DoD)',
+              minItems: 1,
+            },
+            team: {
+              type: 'string',
+              enum: ['Frontend', 'Backend', 'User Experience', 'Quality Assurance'],
+              description: 'Responsible team',
+              example: 'Frontend',
+            },
+            storyPoints: {
+              type: 'string',
+              enum: ['1', '2', '3', '5', '8', '13', '21', '34'],
+              description: 'Fibonacci story points (complexity + technical difficulty)',
+              example: '5',
+            },
+            complexity: {
+              type: 'string',
+              enum: ['low', 'medium', 'high', 'very-high'],
+              description: 'Technical complexity level',
+              example: 'medium',
             },
             technicalNotes: {
               type: 'string',
-              description: 'Technical implementation notes',
-              example: 'Use JWT for session management, bcrypt for password hashing',
+              description: 'Technical implementation details',
+              example: 'Use React Hook Form for validation, implement JWT authentication',
+            },
+            businessValue: {
+              type: 'string',
+              description: 'Business value and impact',
+              example: 'Enables secure user authentication and session management',
+            },
+            relatedStep: {
+              type: 'object',
+              properties: {
+                stepNumber: {
+                  type: 'integer',
+                  example: 1,
+                },
+                action: {
+                  type: 'string',
+                  example: 'Navigate to login page',
+                },
+              },
+              description: 'Related test scenario step',
             },
           },
         },
@@ -157,6 +273,16 @@ const options = {
                   type: 'string',
                   format: 'date-time',
                   example: '2026-01-15T10:30:00Z',
+                },
+                totalStories: {
+                  type: 'integer',
+                  description: 'Total user stories generated',
+                  example: 3,
+                },
+                testScenarioTitle: {
+                  type: 'string',
+                  description: 'Source test scenario title',
+                  example: 'User Login Authentication',
                 },
               },
             },
