@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/generate-user-stories",
+      "destination": "/api/generate-user-stories.js"
+    },
+    {
+      "source": "/api/user-stories",
+      "destination": "/api/user-stories.js"
+    },
+    {
+      "source": "/api/swagger",
+      "destination": "/api/swagger.js"
+    },
+    {
+      "source": "/docs",
+      "destination": "/api/docs.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
