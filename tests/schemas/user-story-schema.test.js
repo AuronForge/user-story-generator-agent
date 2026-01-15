@@ -3,6 +3,7 @@ import {
   userStorySchema,
   acceptanceCriterionSchema,
   validateUserStory,
+  validateUserStoryResponse,
   safeValidateUserStory,
   createGherkinCriterion,
 } from '../../src/schemas/user-story-schema.js';
@@ -238,6 +239,51 @@ describe('User Story Schema', () => {
       expect(criteria[1].type).toBe('when');
       expect(criteria[2].criterion).toBe('Then I should be redirected to dashboard');
       expect(criteria[2].type).toBe('then');
+    });
+  });
+
+  describe('validateUserStoryResponse', () => {
+    test('should validate a valid user story response', () => {
+      const validResponse = {
+        success: true,
+        data: [
+          {
+            id: 'US-001',
+            title: 'Implement Login',
+            description: 'Create login functionality',
+            priority: 'high',
+            acceptanceCriteria: [
+              {
+                criterion: 'User can login successfully',
+              },
+            ],
+            team: 'Backend',
+            storyPoints: '3',
+          },
+        ],
+        metadata: {
+          agent: 'User Story Generator Agent',
+          version: '1.0.0',
+          generatedAt: '2026-01-15T10:30:00Z',
+          totalStories: 1,
+          testScenarioTitle: 'User Login Test',
+        },
+        id: '123e4567-e89b-12d3-a456-426614174000',
+      };
+
+      const result = validateUserStoryResponse(validResponse);
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(1);
+      expect(result.metadata.totalStories).toBe(1);
+    });
+
+    test('should throw on invalid response', () => {
+      const invalidResponse = {
+        success: 'not-boolean',
+        data: 'not-array',
+      };
+
+      expect(() => validateUserStoryResponse(invalidResponse)).toThrow();
     });
   });
 });
