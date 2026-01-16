@@ -1,3 +1,5 @@
+import { getUserStories } from '../src/controllers/user-story.controller.js';
+
 /**
  * @swagger
  * /api/user-stories:
@@ -70,42 +72,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  try {
-    const { id } = req.query;
-
-    // TODO: Implement database query logic
-
-    // Placeholder response
-    if (id) {
-      // Return specific entry
-      res.status(200).json({
-        success: true,
-        data: {
-          id: id,
-          createdAt: new Date().toISOString(),
-          testScenario: {
-            title: 'Sample Test Scenario',
-            description: 'Sample description',
-            type: 'functional',
-          },
-          userStories: [],
-          provider: 'openai',
-        },
-      });
-    } else {
-      // Return all entries
-      res.status(200).json({
-        success: true,
-        total: 0,
-        data: [],
-      });
-    }
-  } catch (error) {
-    console.error('Error fetching user stories:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-    });
-  }
+  // Delegate to controller
+  return getUserStories(req, res);
 }

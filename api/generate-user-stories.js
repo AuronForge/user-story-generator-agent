@@ -1,3 +1,5 @@
+import { generateUserStories } from '../src/controllers/user-story.controller.js';
+
 /**
  * @swagger
  * /api/generate-user-stories:
@@ -67,53 +69,6 @@ export default async function handler(req, res) {
     return;
   }
 
-  try {
-    // TODO: Implement user story generation logic
-    const testScenario = req.body;
-    const provider = req.headers['x-ai-provider'] || 'openai';
-
-    // Validate input
-    if (!testScenario.title || !testScenario.description) {
-      return res.status(400).json({
-        success: false,
-        error: 'Test scenario title and description are required',
-      });
-    }
-
-    // Placeholder response
-    const response = {
-      success: true,
-      data: [
-        {
-          id: 'US-001',
-          title: testScenario.title,
-          story: `As a user, I want to ${testScenario.title.toLowerCase()} so that I can achieve my goal`,
-          acceptanceCriteria: [
-            'Given I am on the application',
-            'When I perform the action',
-            'Then I should see the expected result',
-          ],
-          businessValue: 'Provides value to users',
-          priority: 'high',
-          estimatedPoints: 3,
-          technicalNotes: 'Implementation details to be defined',
-        },
-      ],
-      metadata: {
-        agent: 'User Story Generator Agent',
-        version: '1.0.0',
-        generatedAt: new Date().toISOString(),
-      },
-      id: crypto.randomUUID(),
-    };
-
-    res.status(200).json(response);
-  } catch (error) {
-    console.error('Error generating user stories:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-    });
-  }
+  // Delegate to controller
+  return generateUserStories(req, res);
 }

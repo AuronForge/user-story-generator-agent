@@ -32,14 +32,7 @@ export const userStorySchema = z.object({
   id: z.string(),
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  story: z
-    .string()
-    .min(10, 'User story narrative must be at least 10 characters')
-    .regex(
-      /^As a .+, I want .+, so that .+$/i,
-      'User story must follow format: "As a [role], I want [feature], so that [benefit]"'
-    )
-    .optional(),
+  story: z.string().min(10, 'User story narrative must be at least 10 characters').optional(),
   priority: priorityEnum,
   dependsOn: z
     .array(z.string())
@@ -50,13 +43,15 @@ export const userStorySchema = z.object({
     .array(acceptanceCriterionSchema)
     .min(1, 'At least one acceptance criterion is required'),
   team: teamEnum.describe('Responsible team for implementation'),
-  storyPoints: fibonacciPoints.describe('Story points using Fibonacci sequence'),
+  storyPoints: fibonacciPoints.optional().describe('Story points using Fibonacci sequence'),
+  estimatedPoints: fibonacciPoints.optional().describe('Estimated points (alias for storyPoints)'),
   complexity: z
     .enum(['low', 'medium', 'high', 'very-high'])
     .optional()
     .describe('Technical complexity level'),
   technicalNotes: z.string().optional().describe('Technical implementation details'),
   businessValue: z.string().optional().describe('Business value and impact'),
+  tags: z.array(z.string()).optional().default([]).describe('Tags for categorization'),
   relatedStep: z
     .object({
       stepNumber: z.number().int().positive(),

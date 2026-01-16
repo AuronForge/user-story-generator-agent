@@ -64,6 +64,20 @@ NODE_ENV=development
 
 ## Usage
 
+### Run GitHub Integration Example
+
+```bash
+npm run example:github
+```
+
+This will demonstrate:
+
+- Basic user story generation with GitHub Models
+- Batch processing multiple scenarios
+- Direct agent usage
+- Provider comparison
+- Error handling and retry logic
+
 ### Local Development
 
 ```bash
@@ -73,6 +87,57 @@ npm run dev
 The server will start at `http://localhost:3000`
 
 **Access the API Documentation:** `http://localhost:3000/docs`
+
+### API Examples
+
+#### Generate User Stories (using GitHub Models)
+
+```bash
+curl -X POST http://localhost:3000/api/generate-user-stories \
+  -H "Content-Type: application/json" \
+  -H "x-ai-provider: github" \
+  -d '{
+    "title": "User Login Authentication",
+    "description": "Verify that users can login with valid credentials",
+    "type": "functional",
+    "steps": [
+      {
+        "action": "Navigate to login page",
+        "expectedResult": "Login page is displayed"
+      },
+      {
+        "action": "Enter valid credentials",
+        "expectedResult": "User is authenticated"
+      }
+    ]
+  }'
+```
+
+#### List Generated User Stories
+
+```bash
+curl http://localhost:3000/api/user-stories
+```
+
+#### Get Specific User Story by ID
+
+```bash
+curl http://localhost:3000/api/user-stories?id=your-uuid-here
+```
+
+### Testing
+
+```bash
+npm test                  # Run all tests
+npm run test:coverage     # Run tests with coverage
+npm run test:watch        # Watch mode
+```
+
+## 📚 Documentation
+
+- [GitHub Integration Guide](./docs/GITHUB_INTEGRATION.md) - Complete guide for using GitHub Models
+- [API Documentation](./src/controllers/README.md) - REST API reference
+- [Swagger/OpenAPI](http://localhost:3000/docs) - Interactive API documentation
 
 ## License
 
