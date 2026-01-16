@@ -32,11 +32,11 @@ echo ""
 if [ -f ".vercel/project.json" ]; then
   echo -e "${GREEN}✅ Projeto já está linkado ao Vercel${NC}"
   echo ""
-  
+
   # Ler os valores do arquivo
   ORG_ID=$(cat .vercel/project.json | grep -o '"orgId": "[^"]*' | cut -d'"' -f4)
   PROJECT_ID=$(cat .vercel/project.json | grep -o '"projectId": "[^"]*' | cut -d'"' -f4)
-  
+
   echo "📋 Secrets do Vercel:"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo -e "${GREEN}VERCEL_ORG_ID:${NC}     $ORG_ID"
@@ -48,14 +48,14 @@ else
   echo ""
   echo "Deseja linkar agora? (y/n)"
   read -r response
-  
+
   if [ "$response" = "y" ] || [ "$response" = "Y" ]; then
     npx vercel link
-    
+
     if [ -f ".vercel/project.json" ]; then
       ORG_ID=$(cat .vercel/project.json | grep -o '"orgId": "[^"]*' | cut -d'"' -f4)
       PROJECT_ID=$(cat .vercel/project.json | grep -o '"projectId": "[^"]*' | cut -d'"' -f4)
-      
+
       echo ""
       echo "📋 Secrets do Vercel:"
       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

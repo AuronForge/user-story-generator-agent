@@ -33,38 +33,38 @@ jobs:
         run: |
           # Extract coverage percentages from the coverage report
           COVERAGE_OUTPUT=$(npm run test:coverage 2>&1)
-          
+
           # Extract the "All files" line which contains overall coverage
           ALL_FILES_LINE=$(echo "$COVERAGE_OUTPUT" | grep "All files" | head -1)
-          
+
           if [ -z "$ALL_FILES_LINE" ]; then
             echo "❌ Could not find coverage summary"
             exit 1
           fi
-          
+
           # Extract percentages (removing % sign)
           STATEMENTS=$(echo "$ALL_FILES_LINE" | awk '{print $2}' | sed 's/%//')
           BRANCHES=$(echo "$ALL_FILES_LINE" | awk '{print $3}' | sed 's/%//')
           FUNCTIONS=$(echo "$ALL_FILES_LINE" | awk '{print $4}' | sed 's/%//')
           LINES=$(echo "$ALL_FILES_LINE" | awk '{print $5}' | sed 's/%//')
-          
+
           echo "📊 Coverage Results:"
           echo "  Statements: ${STATEMENTS}%"
           echo "  Branches:   ${BRANCHES}%"
           echo "  Functions:  ${FUNCTIONS}%"
           echo "  Lines:      ${LINES}%"
-          
+
           # Calculate average using bc for floating point arithmetic
           AVERAGE=$(echo "scale=2; ($STATEMENTS + $BRANCHES + $FUNCTIONS + $LINES) / 4" | bc)
-          
+
           echo ""
           echo "📈 Average Coverage: ${AVERAGE}%"
           echo "🎯 Required: 95%"
-          
+
           # Check if average is below 95%
           THRESHOLD=95
           RESULT=$(echo "$AVERAGE < $THRESHOLD" | bc)
-          
+
           if [ "$RESULT" -eq 1 ]; then
             echo ""
             echo "❌ Coverage check FAILED!"
