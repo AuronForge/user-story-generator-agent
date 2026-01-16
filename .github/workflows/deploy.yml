@@ -1,0 +1,101 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Check coverage thresholds
+        run: |
+          # Extract coverage percentages from the coverage report
+          COVERAGE_OUTPUT=$(npm run test:coverage 2>&1)
+          
+          # Extract the "All files" line which contains overall coverage
+          ALL_FILES_LINE=$(echo "$COVERAGE_OUTPUT" | grep "All files" | head -1)
+          
+          if [ -z "$ALL_FILES_LINE" ]; then
+            echo "❌ Could not find coverage summary"
+            exit 1
+          fi
+          
+          # Extract percentages (removing % sign)
+          STATEMENTS=$(echo "$ALL_FILES_LINE" | awk '{print $2}' | sed 's/%//')
+          BRANCHES=$(echo "$ALL_FILES_LINE" | awk '{print $3}' | sed 's/%//')
+          FUNCTIONS=$(echo "$ALL_FILES_LINE" | awk '{print $4}' | sed 's/%//')
+          LINES=$(echo "$ALL_FILES_LINE" | awk '{print $5}' | sed 's/%//')
+          
+          echo "📊 Coverage Results:"
+          echo "  Statements: ${STATEMENTS}%"
+          echo "  Branches:   ${BRANCHES}%"
+          echo "  Functions:  ${FUNCTIONS}%"
+          echo "  Lines:      ${LINES}%"
+          
+          # Calculate average using bc for floating point arithmetic
+          AVERAGE=$(echo "scale=2; ($STATEMENTS + $BRANCHES + $FUNCTIONS + $LINES) / 4" | bc)
+          
+          echo ""
+          echo "📈 Average Coverage: ${AVERAGE}%"
+          echo "🎯 Required: 95%"
+          
+          # Check if average is below 95%
+          THRESHOLD=95
+          RESULT=$(echo "$AVERAGE < $THRESHOLD" | bc)
+          
+          if [ "$RESULT" -eq 1 ]; then
+            echo ""
+            echo "❌ Coverage check FAILED!"
+            echo "   Average coverage (${AVERAGE}%) is below required threshold (${THRESHOLD}%)"
+            exit 1
+          else
+            echo ""
+            echo "✅ Coverage check PASSED!"
+            echo "   Average coverage (${AVERAGE}%) meets the required threshold (${THRESHOLD}%)"
+          fi
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'

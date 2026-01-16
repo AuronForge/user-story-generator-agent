@@ -1,5 +1,8 @@
 # User Story Generator Agent
 
+[![CI/CD Pipeline](https://github.com/AuronForge/user-story-generator-agent/actions/workflows/deploy.yml/badge.svg)](https://github.com/AuronForge/user-story-generator-agent/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/AuronForge/user-story-generator-agent/branch/main/graph/badge.svg)](https://codecov.io/gh/AuronForge/user-story-generator-agent)
+
 🤖 Agent responsible for receiving test scenarios (functional or business) and converting them into one or more Agile user stories. Produces clear, value-driven stories with acceptance criteria, ready for backlog refinement and team execution.
 
 ## Overview
@@ -133,8 +136,39 @@ npm run test:coverage     # Run tests with coverage
 npm run test:watch        # Watch mode
 ```
 
+## � CI/CD Pipeline
+
+This project uses GitHub Actions for automated testing and deployment to Vercel.
+
+### Pipeline Features
+
+- ✅ Automated testing on every push and PR
+- ✅ Code coverage validation (minimum 95% average)
+- ✅ Automatic deployment to Vercel on main branch
+- ✅ Lint and format validation
+- ✅ Coverage reports uploaded to Codecov
+
+### Setting up CI/CD
+
+1. Configure GitHub Secrets:
+   - `VERCEL_TOKEN` - Your Vercel deployment token
+   - `VERCEL_ORG_ID` - Your Vercel organization ID
+   - `VERCEL_PROJECT_ID` - Your Vercel project ID
+   - `CODECOV_TOKEN` - (Optional) Codecov token for coverage reports
+
+2. Run the setup helper script:
+
+```bash
+bash scripts/setup-github-secrets.sh
+```
+
+3. For detailed instructions, see: [.github/DEPLOY.md](./.github/DEPLOY.md)
+
+**Note:** The pipeline will **block deployment** if test coverage average is below 95%.
+
 ## 📚 Documentation
 
+- [CI/CD Setup Guide](./.github/DEPLOY.md) - GitHub Actions and Vercel deployment
 - [GitHub Integration Guide](./docs/GITHUB_INTEGRATION.md) - Complete guide for using GitHub Models
 - [API Documentation](./src/controllers/README.md) - REST API reference
 - [Swagger/OpenAPI](http://localhost:3000/docs) - Interactive API documentation
