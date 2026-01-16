@@ -1,36 +1,45 @@
 import { jest } from '@jest/globals';
 import { StoryGeneratorAgent } from '../../src/agents/story-generator-agent.js';
-import { AIService } from '../../src/services/ai-service.js';
 
-jest.mock('../../src/services/ai-service.js');
+// Set environment variables before any imports
+process.env.GITHUB_TOKEN = 'test-github-token';
+process.env.GITHUB_MODEL = 'gpt-4o';
 
 describe('Story Generator Agent', () => {
   let agent;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    agent = new StoryGeneratorAgent('openai');
+    agent = new StoryGeneratorAgent('github');
   });
 
   describe('constructor', () => {
     it('should initialize with correct properties', () => {
       expect(agent.agentName).toBe('User Story Generator Agent');
       expect(agent.version).toBe('1.0.0');
-      expect(agent.aiService).toBeInstanceOf(AIService);
+      expect(agent.aiService).toBeDefined();
     });
 
     it('should accept different AI providers', () => {
       const githubAgent = new StoryGeneratorAgent('github');
-      expect(githubAgent.aiService).toBeInstanceOf(AIService);
+      expect(githubAgent.aiService).toBeDefined();
+      expect(githubAgent.aiService.provider).toBe('github');
+    });
+
+    it('should accept anthropic provider', () => {
+      const anthropicAgent = new StoryGeneratorAgent('anthropic');
+      expect(anthropicAgent.aiService.provider).toBe('anthropic');
     });
   });
 
   describe('generateUserStories', () => {
-    it('should generate user stories successfully', async () => {
+    it('should generate user stories successfully with single scenario', async () => {
       const mockTestScenario = {
         title: 'User Login',
         description: 'Test user login functionality',
-        type: 'functional',
+        given: 'User is on login page',
+        when: 'User enters valid credentials',
+        then: 'User is logged in',
       };
 
       const mockAIResponse = JSON.stringify({
@@ -57,7 +66,7 @@ describe('Story Generator Agent', () => {
         ],
       });
 
-      AIService.prototype.generateCompletion = jest.fn().mockResolvedValue(mockAIResponse);
+      jest.spyOn(agent.aiService, 'generateCompletion').mockResolvedValue(mockAIResponse);
 
       const result = await agent.generateUserStories(mockTestScenario);
 
@@ -65,13 +74,81 @@ describe('Story Generator Agent', () => {
       expect(result.data).toHaveLength(1);
       expect(result.data[0].id).toBe('US-001');
       expect(result.metadata.agent).toBe('User Story Generator Agent');
-      expect(AIService.prototype.generateCompletion).toHaveBeenCalled();
+      expect(agent.aiService.generateCompletion).toHaveBeenCalled();
+    });
+
+    it('should generate user stories for multiple scenarios', async () => {
+      const mockTestSuite = {
+        featureName: 'Shopping Cart',
+        scenarios: [
+          {
+            title: 'Add to Cart',
+            description: 'Add item to cart',
+            given: 'User is on product page',
+            when: 'User clicks Add to Cart',
+            then: 'Product is added',
+          },
+          {
+            title: 'Remove from Cart',
+            description: 'Remove item from cart',
+            given: 'User has items in cart',
+            when: 'User clicks remove',
+            then: 'Product is removed',
+          },
+        ],
+      };
+
+      const mockAIResponse1 = JSON.stringify({
+        userStories: [
+          {
+            id: 'US-001',
+            title: 'Add Product to Cart',
+            description: 'Enable users to add products to their shopping cart',
+            story: 'As a user, I want to add products',
+            priority: 'high',
+            dependsOn: [],
+            acceptanceCriteria: [{ criterion: 'Product added', type: 'general' }],
+            businessValue: 'Shopping',
+            team: 'Frontend',
+            tags: [],
+          },
+        ],
+      });
+
+      const mockAIResponse2 = JSON.stringify({
+        userStories: [
+          {
+            id: 'US-002',
+            title: 'Remove Product from Cart',
+            description: 'Enable users to remove products from their shopping cart',
+            story: 'As a user, I want to remove products',
+            priority: 'medium',
+            dependsOn: ['US-001'],
+            acceptanceCriteria: [{ criterion: 'Product removed', type: 'general' }],
+            businessValue: 'Shopping',
+            team: 'Frontend',
+            tags: [],
+          },
+        ],
+      });
+
+      jest
+        .spyOn(agent.aiService, 'generateCompletion')
+        .mockResolvedValueOnce(mockAIResponse1)
+        .mockResolvedValueOnce(mockAIResponse2);
+
+      const result = await agent.generateUserStories(mockTestSuite);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(2);
+      expect(agent.aiService.generateCompletion).toHaveBeenCalledTimes(2);
     });
 
     it('should handle validation errors', async () => {
       const invalidScenario = {
         // Missing required fields
-        title: '',
+        title: 'Te', // Too short
+        description: 'Short', // Too short
       };
 
       const result = await agent.generateUserStories(invalidScenario);
@@ -81,15 +158,58 @@ describe('Story Generator Agent', () => {
       expect(result.metadata.agent).toBe('User Story Generator Agent');
     });
 
-    it('should handle AI service errors', async () => {
-      const mockTestScenario = {
-        title: 'Test',
-        description: 'Test description',
-        type: 'functional',
+    it('should process test suite with feature metadata', async () => {
+      const mockTestSuite = {
+        featureName: 'Shopping Cart',
+        description: 'Shopping cart functionality',
+        scenarios: [
+          {
+            title: 'Add to Cart',
+            description: 'Add item to cart',
+            given: 'User is on product page',
+            when: 'User clicks Add to Cart',
+            then: 'Product is added',
+          },
+        ],
       };
 
-      AIService.prototype.generateCompletion = jest
-        .fn()
+      const mockAIResponse = JSON.stringify({
+        userStories: [
+          {
+            id: 'US-001',
+            title: 'Add Product to Cart',
+            description: 'Shopping cart addition',
+            story: 'As a user, I want to add products',
+            priority: 'high',
+            dependsOn: [],
+            acceptanceCriteria: [{ criterion: 'Product added', type: 'general' }],
+            businessValue: 'Shopping',
+            team: 'Frontend',
+            tags: [],
+          },
+        ],
+      });
+
+      jest.spyOn(agent.aiService, 'generateCompletion').mockResolvedValue(mockAIResponse);
+
+      const result = await agent.generateUserStories(mockTestSuite);
+
+      expect(result.success).toBe(true);
+      expect(result.metadata.featureMetadata).toBeDefined();
+      expect(result.metadata.featureMetadata.featureName).toBe('Shopping Cart');
+    });
+
+    it('should handle AI service errors', async () => {
+      const mockTestScenario = {
+        title: 'Test Scenario',
+        description: 'Test description for error handling',
+        given: 'User is on test page',
+        when: 'User performs action',
+        then: 'System responds',
+      };
+
+      jest
+        .spyOn(agent.aiService, 'generateCompletion')
         .mockRejectedValue(new Error('AI Service Error'));
 
       const result = await agent.generateUserStories(mockTestScenario);
@@ -100,9 +220,11 @@ describe('Story Generator Agent', () => {
 
     it('should handle invalid AI response format', async () => {
       const mockTestScenario = {
-        title: 'Test',
-        description: 'Test description',
-        type: 'functional',
+        title: 'Test Scenario',
+        description: 'Test description for invalid response',
+        given: 'User is on test page',
+        when: 'User performs action',
+        then: 'System responds',
       };
 
       const invalidResponse = JSON.stringify({
@@ -114,7 +236,7 @@ describe('Story Generator Agent', () => {
         ],
       });
 
-      AIService.prototype.generateCompletion = jest.fn().mockResolvedValue(invalidResponse);
+      jest.spyOn(agent.aiService, 'generateCompletion').mockResolvedValue(invalidResponse);
 
       const result = await agent.generateUserStories(mockTestScenario);
 
@@ -214,6 +336,56 @@ describe('Story Generator Agent', () => {
       expect(analysis.total).toBe(0);
       expect(analysis.totalPoints).toBe(0);
       expect(analysis.dependencies).toBe(0);
+    });
+
+    it('should handle story without estimatedPoints field', async () => {
+      const stories = [
+        { id: 'US-100', priority: 'high' },
+        { id: 'US-101', priority: 'medium', estimatedPoints: undefined },
+      ];
+
+      const analysis = await agent.analyzeUserStories(stories);
+
+      expect(analysis.totalPoints).toBe(0);
+      expect(analysis.total).toBe(2);
+    });
+
+    it('should handle story with null dependsOn', async () => {
+      const stories = [{ id: 'US-102', priority: 'high', estimatedPoints: '5', dependsOn: null }];
+
+      const analysis = await agent.analyzeUserStories(stories);
+
+      expect(analysis.dependencies).toBe(0);
+    });
+
+    it('should handle story with empty dependsOn array', async () => {
+      const stories = [{ id: 'US-103', priority: 'medium', estimatedPoints: '3', dependsOn: [] }];
+
+      const analysis = await agent.analyzeUserStories(stories);
+
+      expect(analysis.dependencies).toBe(0);
+    });
+
+    it('should handle story with non-empty dependsOn array', async () => {
+      const stories = [
+        { id: 'US-104', priority: 'low', estimatedPoints: '2', dependsOn: ['US-103'] },
+      ];
+
+      const analysis = await agent.analyzeUserStories(stories);
+
+      expect(analysis.dependencies).toBe(1);
+    });
+
+    it('should calculate totalPoints correctly with various estimatedPoints', async () => {
+      const stories = [
+        { id: 'US-105', priority: 'high', estimatedPoints: '5' },
+        { id: 'US-106', priority: 'medium', estimatedPoints: '8' },
+        { id: 'US-107', priority: 'low', estimatedPoints: '13' },
+      ];
+
+      const analysis = await agent.analyzeUserStories(stories);
+
+      expect(analysis.totalPoints).toBe(26);
     });
   });
 });

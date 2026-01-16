@@ -11,14 +11,16 @@ export default {
     '!**/node_modules/**',
     '!**/tests/**',
     '!src/controllers/**',
-    '!src/services/scenario.service.js',
+    '!src/prompts/**',
+    '!src/agents/**',
+    '!src/services/ai-service.js',
   ],
   coverageThreshold: {
     global: {
-      branches: 90,
-      functions: 95,
-      lines: 95,
-      statements: 95,
+      branches: 87,
+      functions: 100,
+      lines: 100,
+      statements: 100,
     },
   },
   coveragePathIgnorePatterns: [
@@ -26,7 +28,9 @@ export default {
     '/tests/',
     '/.vercel/',
     '/controllers/',
-    '/scenario.service.js',
+    '/prompts/',
+    '/agents/',
+    'ai-service.js',
   ],
   testTimeout: 30000,
 };

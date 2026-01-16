@@ -1,9 +1,11 @@
 import { describe, test, expect } from '@jest/globals';
 import {
   testScenarioSchema,
+  bddScenarioSchema,
   testStepSchema,
-  validateTestScenario,
-  safeValidateTestScenario,
+  testSuiteSchema,
+  inputSchema,
+  validateInput,
 } from '../../src/schemas/test-scenario-schema.js';
 
 describe('Test Scenario Schema', () => {
@@ -33,7 +35,7 @@ describe('Test Scenario Schema', () => {
       const stepWithData = {
         action: 'Enter credentials',
         expectedResult: 'Credentials accepted',
-        data: {
+        testData: {
           email: 'user@example.com',
           password: '****',
         },
@@ -41,7 +43,7 @@ describe('Test Scenario Schema', () => {
 
       const result = testStepSchema.safeParse(stepWithData);
       expect(result.success).toBe(true);
-      expect(result.data.data).toEqual({
+      expect(result.data.testData).toEqual({
         email: 'user@example.com',
         password: '****',
       });
@@ -139,8 +141,8 @@ describe('Test Scenario Schema', () => {
     });
   });
 
-  describe('validateTestScenario', () => {
-    test('should validate and return data', () => {
+  describe('validateInput', () => {
+    test('should validate traditional scenario and return data', () => {
       const validData = {
         title: 'Test Scenario',
         description: 'Test description',
@@ -152,9 +154,23 @@ describe('Test Scenario Schema', () => {
         ],
       };
 
-      const result = validateTestScenario(validData);
+      const result = validateInput(validData);
       expect(result.title).toBe('Test Scenario');
       expect(result.steps).toHaveLength(1);
+    });
+
+    test('should validate BDD scenario and return data', () => {
+      const validBddData = {
+        title: 'Test BDD Scenario',
+        description: 'Test BDD description',
+        given: 'User is on login page',
+        when: 'User enters credentials',
+        then: 'User is logged in',
+      };
+
+      const result = validateInput(validBddData);
+      expect(result.title).toBe('Test BDD Scenario');
+      expect(result.given).toBe('User is on login page');
     });
 
     test('should throw on invalid data', () => {
@@ -163,12 +179,12 @@ describe('Test Scenario Schema', () => {
         description: 'Short',
       };
 
-      expect(() => validateTestScenario(invalidData)).toThrow();
+      expect(() => validateInput(invalidData)).toThrow();
     });
   });
 
-  describe('safeValidateTestScenario', () => {
-    test('should return success with valid data', () => {
+  describe('inputSchema safeParse', () => {
+    test('should return success with valid traditional scenario', () => {
       const validData = {
         title: 'Test Scenario',
         description: 'Test description',
@@ -180,7 +196,21 @@ describe('Test Scenario Schema', () => {
         ],
       };
 
-      const result = safeValidateTestScenario(validData);
+      const result = inputSchema.safeParse(validData);
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+    });
+
+    test('should return success with valid BDD scenario', () => {
+      const validBddData = {
+        title: 'Test BDD Scenario',
+        description: 'Test BDD description',
+        given: 'User is on login page',
+        when: 'User enters credentials',
+        then: 'User is logged in',
+      };
+
+      const result = inputSchema.safeParse(validBddData);
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
@@ -191,10 +221,9 @@ describe('Test Scenario Schema', () => {
         description: 'Short',
       };
 
-      const result = safeValidateTestScenario(invalidData);
+      const result = inputSchema.safeParse(invalidData);
       expect(result.success).toBe(false);
-      expect(result.errors).toBeDefined();
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.error).toBeDefined();
     });
   });
 });

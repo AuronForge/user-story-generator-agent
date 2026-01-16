@@ -1,10 +1,24 @@
 import { jest } from '@jest/globals';
-import * as userStoryService from '../../src/services/user-story.service.js';
-import * as userStoryRepository from '../../src/repositories/user-story.repository.js';
-import { StoryGeneratorAgent } from '../../src/agents/story-generator-agent.js';
 
-jest.mock('../../src/repositories/user-story.repository.js');
-jest.mock('../../src/agents/story-generator-agent.js');
+// Set environment variable for tests
+process.env.GITHUB_TOKEN = 'test-github-token';
+
+// Mock repository before importing
+const mockCreate = jest.fn();
+const mockFindAll = jest.fn();
+const mockFindById = jest.fn();
+const mockDeleteById = jest.fn();
+
+await jest.unstable_mockModule('../../src/repositories/user-story.repository.js', () => ({
+  create: mockCreate,
+  findAll: mockFindAll,
+  findById: mockFindById,
+  deleteById: mockDeleteById,
+}));
+
+// Import after mocking
+const userStoryService = await import('../../src/services/user-story.service.js');
+const { StoryGeneratorAgent } = await import('../../src/agents/story-generator-agent.js');
 
 describe('User Story Service', () => {
   beforeEach(() => {
@@ -44,23 +58,19 @@ describe('User Story Service', () => {
         createdAt: '2026-01-16T00:00:00.000Z',
         testScenario: mockTestScenario,
         userStories: mockGeneratedStories,
-        provider: 'openai',
+        provider: 'github',
       };
 
       StoryGeneratorAgent.prototype.generateUserStories = jest
         .fn()
         .mockResolvedValue(mockAgentResult);
-      userStoryRepository.create.mockReturnValue(mockSavedEntry);
+      mockCreate.mockReturnValue(mockSavedEntry);
 
-      const result = await userStoryService.generateUserStories(mockTestScenario, 'openai');
+      const result = await userStoryService.generateUserStories(mockTestScenario, 'github');
 
       expect(result.success).toBe(true);
       expect(result.id).toBe('entry-123');
-      expect(userStoryRepository.create).toHaveBeenCalledWith(
-        mockTestScenario,
-        mockGeneratedStories,
-        'openai'
-      );
+      expect(mockCreate).toHaveBeenCalledWith(mockTestScenario, mockGeneratedStories, 'github');
     });
 
     it('should return error when agent fails', async () => {
@@ -73,21 +83,17 @@ describe('User Story Service', () => {
       const mockAgentResult = {
         success: false,
         error: 'Agent error',
-        metadata: {
-          agent: 'User Story Generator Agent',
-          version: '1.0.0',
-        },
       };
 
       StoryGeneratorAgent.prototype.generateUserStories = jest
         .fn()
         .mockResolvedValue(mockAgentResult);
 
-      const result = await userStoryService.generateUserStories(mockTestScenario, 'openai');
+      const result = await userStoryService.generateUserStories(mockTestScenario, 'github');
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Agent error');
-      expect(userStoryRepository.create).not.toHaveBeenCalled();
+      expect(mockCreate).not.toHaveBeenCalled();
     });
 
     it('should throw error when database save fails', async () => {
@@ -105,12 +111,12 @@ describe('User Story Service', () => {
       StoryGeneratorAgent.prototype.generateUserStories = jest
         .fn()
         .mockResolvedValue(mockAgentResult);
-      userStoryRepository.create.mockImplementation(() => {
+      mockCreate.mockImplementation(() => {
         throw new Error('Database error');
       });
 
       await expect(
-        userStoryService.generateUserStories(mockTestScenario, 'openai')
+        userStoryService.generateUserStories(mockTestScenario, 'github')
       ).rejects.toThrow('Failed to save user stories: Database error');
     });
   });
@@ -121,12 +127,12 @@ describe('User Story Service', () => {
         userStories: [{ id: '1' }, { id: '2' }],
       };
 
-      userStoryRepository.findAll.mockReturnValue(mockDb);
+      mockFindAll.mockReturnValue(mockDb);
 
       const result = userStoryService.getAllUserStories();
 
       expect(result).toEqual(mockDb);
-      expect(userStoryRepository.findAll).toHaveBeenCalled();
+      expect(mockFindAll).toHaveBeenCalled();
     });
   });
 
@@ -134,23 +140,23 @@ describe('User Story Service', () => {
     it('should return user story by id', () => {
       const mockStory = { id: '123' };
 
-      userStoryRepository.findById.mockReturnValue(mockStory);
+      mockFindById.mockReturnValue(mockStory);
 
       const result = userStoryService.getUserStoryById('123');
 
       expect(result).toEqual(mockStory);
-      expect(userStoryRepository.findById).toHaveBeenCalledWith('123');
+      expect(mockFindById).toHaveBeenCalledWith('123');
     });
   });
 
   describe('deleteUserStoryById', () => {
     it('should delete user story by id', () => {
-      userStoryRepository.deleteById.mockReturnValue(true);
+      mockDeleteById.mockReturnValue(true);
 
       const result = userStoryService.deleteUserStoryById('123');
 
       expect(result).toBe(true);
-      expect(userStoryRepository.deleteById).toHaveBeenCalledWith('123');
+      expect(mockDeleteById).toHaveBeenCalledWith('123');
     });
   });
 });

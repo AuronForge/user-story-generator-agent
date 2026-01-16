@@ -64,11 +64,6 @@ export const create = (testScenario, generatedStories, provider = 'openai', dbPa
   ensureDatabase(dbPath);
   const db = findAll(dbPath);
 
-  // Ensure userStories array exists
-  if (!db || !Array.isArray(db.userStories)) {
-    throw new Error('Database is corrupted or invalid format');
-  }
-
   const userStoryEntry = {
     id: randomUUID(),
     createdAt: new Date().toISOString(),

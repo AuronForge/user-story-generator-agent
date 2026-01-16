@@ -1,11 +1,19 @@
 import { jest } from '@jest/globals';
-import * as userStoryService from '../../src/services/user-story.service.js';
-import {
-  generateUserStories,
-  getUserStories,
-} from '../../src/controllers/user-story.controller.js';
 
-jest.mock('../../src/services/user-story.service.js');
+// Mock before importing
+const mockGenerateUserStories = jest.fn();
+const mockGetAllUserStories = jest.fn();
+const mockGetUserStoryById = jest.fn();
+
+await jest.unstable_mockModule('../../src/services/user-story.service.js', () => ({
+  generateUserStories: mockGenerateUserStories,
+  getAllUserStories: mockGetAllUserStories,
+  getUserStoryById: mockGetUserStoryById,
+}));
+
+// Import after mocking
+const { generateUserStories, getUserStories } =
+  await import('../../src/controllers/user-story.controller.js');
 
 describe('User Story Controller', () => {
   let req;
@@ -55,11 +63,11 @@ describe('User Story Controller', () => {
 
       req.headers['x-ai-provider'] = 'openai';
 
-      userStoryService.generateUserStories.mockResolvedValue(mockResult);
+      mockGenerateUserStories.mockResolvedValue(mockResult);
 
       await generateUserStories(req, res);
 
-      expect(userStoryService.generateUserStories).toHaveBeenCalledWith(req.body, 'openai');
+      expect(mockGenerateUserStories).toHaveBeenCalledWith(req.body, 'openai');
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockResult);
     });
@@ -76,11 +84,11 @@ describe('User Story Controller', () => {
         type: 'functional',
       };
 
-      userStoryService.generateUserStories.mockResolvedValue(mockResult);
+      mockGenerateUserStories.mockResolvedValue(mockResult);
 
       await generateUserStories(req, res);
 
-      expect(userStoryService.generateUserStories).toHaveBeenCalledWith(req.body, 'openai');
+      expect(mockGenerateUserStories).toHaveBeenCalledWith(req.body, 'openai');
     });
 
     it('should return 400 when generation fails', async () => {
@@ -93,7 +101,7 @@ describe('User Story Controller', () => {
         title: 'Test',
       };
 
-      userStoryService.generateUserStories.mockResolvedValue(mockResult);
+      mockGenerateUserStories.mockResolvedValue(mockResult);
 
       await generateUserStories(req, res);
 
@@ -108,7 +116,7 @@ describe('User Story Controller', () => {
         type: 'functional',
       };
 
-      userStoryService.generateUserStories.mockRejectedValue(new Error('Service error'));
+      mockGenerateUserStories.mockRejectedValue(new Error('Service error'));
 
       await generateUserStories(req, res);
 
@@ -136,11 +144,11 @@ describe('User Story Controller', () => {
         ],
       };
 
-      userStoryService.getAllUserStories.mockReturnValue(mockDb);
+      mockGetAllUserStories.mockReturnValue(mockDb);
 
       await getUserStories(req, res);
 
-      expect(userStoryService.getAllUserStories).toHaveBeenCalled();
+      expect(mockGetAllUserStories).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -160,11 +168,11 @@ describe('User Story Controller', () => {
 
       req.query.id = 'test-1';
 
-      userStoryService.getUserStoryById.mockReturnValue(mockStory);
+      mockGetUserStoryById.mockReturnValue(mockStory);
 
       await getUserStories(req, res);
 
-      expect(userStoryService.getUserStoryById).toHaveBeenCalledWith('test-1');
+      expect(mockGetUserStoryById).toHaveBeenCalledWith('test-1');
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -175,7 +183,7 @@ describe('User Story Controller', () => {
     it('should return 404 when user story not found', async () => {
       req.query.id = 'nonexistent';
 
-      userStoryService.getUserStoryById.mockReturnValue(undefined);
+      mockGetUserStoryById.mockReturnValue(undefined);
 
       await getUserStories(req, res);
 
@@ -187,7 +195,7 @@ describe('User Story Controller', () => {
     });
 
     it('should handle service errors', async () => {
-      userStoryService.getAllUserStories.mockImplementation(() => {
+      mockGetAllUserStories.mockImplementation(() => {
         throw new Error('Database error');
       });
 

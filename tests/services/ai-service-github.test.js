@@ -1,9 +1,33 @@
 import { jest } from '@jest/globals';
 import { AIService } from '../../src/services/ai-service.js';
+import OpenAI from 'openai';
 
 // Mock OpenAI and Anthropic clients
-jest.mock('openai');
-jest.mock('@anthropic-ai/sdk');
+jest.mock('openai', () => {
+  return {
+    default: jest.fn().mockImplementation(() => {
+      return {
+        chat: {
+          completions: {
+            create: jest.fn(),
+          },
+        },
+      };
+    }),
+  };
+});
+
+jest.mock('@anthropic-ai/sdk', () => {
+  return {
+    default: jest.fn().mockImplementation(() => {
+      return {
+        messages: {
+          create: jest.fn(),
+        },
+      };
+    }),
+  };
+});
 
 describe('AI Service - GitHub Models Integration', () => {
   beforeEach(() => {
@@ -16,6 +40,8 @@ describe('AI Service - GitHub Models Integration', () => {
   afterEach(() => {
     delete process.env.GITHUB_TOKEN;
     delete process.env.GITHUB_MODEL;
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
   });
 
   describe('GitHub Provider Configuration', () => {
@@ -185,6 +211,10 @@ describe('AI Service - GitHub Models Integration', () => {
 
   describe('Multiple Provider Support', () => {
     it('should support switching between providers', async () => {
+      // Set required API keys for all providers
+      process.env.OPENAI_API_KEY = 'test-openai-key';
+      process.env.ANTHROPIC_API_KEY = 'test-anthropic-key';
+
       const githubService = new AIService('github');
       const openaiService = new AIService('openai');
       const anthropicService = new AIService('anthropic');
@@ -192,6 +222,10 @@ describe('AI Service - GitHub Models Integration', () => {
       expect(githubService.provider).toBe('github');
       expect(openaiService.provider).toBe('openai');
       expect(anthropicService.provider).toBe('anthropic');
+
+      // Cleanup
+      delete process.env.OPENAI_API_KEY;
+      delete process.env.ANTHROPIC_API_KEY;
     });
 
     it('should route to correct completion method', async () => {
@@ -242,6 +276,114 @@ describe('AI Service - GitHub Models Integration', () => {
 
       expect(result).toBe(expectedContent);
       expect(typeof result).toBe('string');
+    });
+  });
+
+  describe('Anthropic Integration', () => {
+    beforeEach(() => {
+      process.env.ANTHROPIC_API_KEY = 'test-anthropic-key';
+      process.env.ANTHROPIC_MODEL = 'claude-3-5-sonnet-20241022';
+    });
+
+    afterEach(() => {
+      delete process.env.ANTHROPIC_API_KEY;
+      delete process.env.ANTHROPIC_MODEL;
+    });
+
+    it('should initialize with Anthropic provider', () => {
+      const service = new AIService('anthropic');
+
+      expect(service.provider).toBe('anthropic');
+      expect(service.model).toBe('claude-3-5-sonnet-20241022');
+    });
+
+    it('should generate completion with Anthropic', async () => {
+      const service = new AIService('anthropic');
+
+      const mockResponse = {
+        content: [
+          {
+            text: JSON.stringify({
+              userStories: [
+                {
+                  id: 'US-001',
+                  title: 'User Login',
+                  story: 'As a user, I want to login',
+                },
+              ],
+            }),
+          },
+        ],
+      };
+
+      service.client.messages = {
+        create: jest.fn().mockResolvedValue(mockResponse),
+      };
+
+      const prompt = 'Generate user stories';
+      const result = await service.generateCompletion(prompt);
+
+      expect(service.client.messages.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: 'claude-3-5-sonnet-20241022',
+          messages: expect.arrayContaining([
+            expect.objectContaining({ role: 'user', content: prompt }),
+          ]),
+          system: expect.stringContaining('Product Owner'),
+        })
+      );
+
+      expect(result).toBeDefined();
+      const parsed = JSON.parse(result);
+      expect(parsed.userStories).toHaveLength(1);
+    });
+
+    it('should handle custom maxTokens option for Anthropic', async () => {
+      const service = new AIService('anthropic');
+
+      service.client.messages = {
+        create: jest.fn().mockResolvedValue({
+          content: [{ text: '{}' }],
+        }),
+      };
+
+      await service.generateCompletion('test', { maxTokens: 8000 });
+
+      expect(service.client.messages.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          max_tokens: 8000,
+        })
+      );
+    });
+
+    it('should use default maxTokens when not specified for Anthropic', async () => {
+      const service = new AIService('anthropic');
+
+      service.client.messages = {
+        create: jest.fn().mockResolvedValue({
+          content: [{ text: '{}' }],
+        }),
+      };
+
+      await service.generateCompletion('test');
+
+      expect(service.client.messages.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          max_tokens: 4096,
+        })
+      );
+    });
+
+    it('should handle Anthropic errors', async () => {
+      const service = new AIService('anthropic');
+
+      service.client.messages = {
+        create: jest.fn().mockRejectedValue(new Error('Anthropic API error')),
+      };
+
+      await expect(service.generateCompletion('test')).rejects.toThrow(
+        'AI Service Error: Anthropic API error'
+      );
     });
   });
 
