@@ -19,15 +19,19 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'http://localhost:3001/api/v1',
         description: 'Development server',
       },
       {
-        url: 'https://user-story-generator-agent.vercel.app',
+        url: 'https://user-story-generator-agent.vercel.app/api/v1',
         description: 'Production server',
       },
     ],
     tags: [
+      {
+        name: 'Health',
+        description: 'Health check endpoints',
+      },
       {
         name: 'User Stories',
         description: 'Endpoints for managing user stories',
@@ -367,7 +371,7 @@ const options = {
       },
     },
   },
-  apis: ['./api/*.js', './src/**/*.js'],
+  apis: ['./api/v1/*.js', './src/**/*.js'],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);

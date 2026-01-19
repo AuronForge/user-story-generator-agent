@@ -1,8 +1,8 @@
-import { generateUserStories } from '../src/controllers/user-story.controller.js';
+import { generateUserStories } from '../../src/controllers/user-story.controller.js';
 
 /**
  * @swagger
- * /api/generate-user-stories:
+ * /generate-user-stories:
  *   post:
  *     summary: Generates user stories from a test scenario
  *     description: Uses AI to automatically generate Agile user stories based on test scenario input. Supports multiple AI providers.

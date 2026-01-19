@@ -1,4 +1,4 @@
-import { swaggerSpec } from '../swagger.js';
+import { swaggerSpec } from '../../swagger.js';
 
 /**
  * Swagger JSON Spec Endpoint

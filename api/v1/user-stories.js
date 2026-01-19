@@ -1,8 +1,8 @@
-import { getUserStories } from '../src/controllers/user-story.controller.js';
+import { getUserStories } from '../../src/controllers/user-story.controller.js';
 
 /**
  * @swagger
- * /api/user-stories:
+ * /user-stories:
  *   get:
  *     summary: Lists all generated user stories or retrieves a specific one
  *     description: Returns all user stories entries or a specific entry by ID. Entries are automatically saved to database after generation.

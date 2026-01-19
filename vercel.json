@@ -8,20 +8,48 @@
   ],
   "rewrites": [
     {
-      "source": "/api/generate-user-stories",
-      "destination": "/api/generate-user-stories.js"
+      "source": "/",
+      "destination": "/api/v1/api-docs.js"
     },
     {
-      "source": "/api/user-stories",
-      "destination": "/api/user-stories.js"
+      "source": "/api/v1/api-docs",
+      "destination": "/api/v1/api-docs.js"
     },
     {
-      "source": "/api/swagger",
-      "destination": "/api/swagger.js"
+      "source": "/api/v1/generate-user-stories",
+      "destination": "/api/v1/generate-user-stories.js"
+    },
+    {
+      "source": "/api/v1/user-stories",
+      "destination": "/api/v1/user-stories.js"
+    },
+    {
+      "source": "/api/v1/swagger",
+      "destination": "/api/v1/swagger.js"
+    },
+    {
+      "source": "/api/v1/docs",
+      "destination": "/api/v1/api-docs.js"
     },
     {
       "source": "/docs",
-      "destination": "/api/docs.js"
+      "destination": "/api/v1/api-docs.js"
+    },
+    {
+      "source": "/api/v1/health",
+      "destination": "/api/v1/health.js"
+    },
+    {
+      "source": "/api/generate-user-stories",
+      "destination": "/api/v1/generate-user-stories.js"
+    },
+    {
+      "source": "/api/user-stories",
+      "destination": "/api/v1/user-stories.js"
+    },
+    {
+      "source": "/api/swagger",
+      "destination": "/api/v1/swagger.js"
     }
   ],
   "env": {

@@ -1,0 +1,636 @@
+{
+  "info": {
+    "name": "User Story Generator Agent API",
+    "description": "AI-powered API for converting test scenarios into Agile user stories. Supports multiple AI providers (GitHub Models, OpenAI, Anthropic) and includes auto-save to database.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "PROD_URL",
+      "value": "https://user-story-generator-agent.vercel.app",
+      "type": "string"
+    },
+    {
+      "key": "AI_PROVIDER",
+      "value": "github",
+      "type": "string",
+      "description": "AI Provider: github, openai, or anthropic"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Documentation",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/health",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Verifica se a API está funcionando corretamente e retorna informações sobre endpoints disponíveis"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/health",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"service\": \"user-story-generator-agent\",\n  \"version\": \"1.0.0\",\n  \"apiVersion\": \"v1\",\n  \"timestamp\": \"2026-01-19T10:30:00.000Z\",\n  \"endpoints\": {\n    \"generateUserStories\": \"/api/v1/generate-user-stories\",\n    \"userStories\": \"/api/v1/user-stories\",\n    \"swagger\": \"/api/v1/swagger\",\n    \"docs\": \"/api/v1/api-docs\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Swagger Spec",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/swagger",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "swagger"]
+            },
+            "description": "Retorna a especificação OpenAPI 3.0 da API em formato JSON"
+          },
+          "response": []
+        },
+        {
+          "name": "API Documentation (Swagger UI)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/api-docs",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "api-docs"]
+            },
+            "description": "Abre a interface interativa do Swagger UI para testar os endpoints"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para verificação de saúde e documentação da API"
+    },
+    {
+      "name": "Generate User Stories",
+      "item": [
+        {
+          "name": "Generate from Login Test Scenario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-ai-provider",
+                "value": "{{AI_PROVIDER}}",
+                "description": "AI Provider to use (github, openai, anthropic)"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"User Login Authentication\",\n  \"description\": \"Verify that users can login with valid credentials\",\n  \"type\": \"functional\",\n  \"priority\": \"high\",\n  \"steps\": [\n    {\n      \"stepNumber\": 1,\n      \"action\": \"Navigate to login page\",\n      \"expectedResult\": \"Login page is displayed with email and password fields\"\n    },\n    {\n      \"stepNumber\": 2,\n      \"action\": \"Enter valid email address\",\n      \"expectedResult\": \"Email is accepted and validated\"\n    },\n    {\n      \"stepNumber\": 3,\n      \"action\": \"Enter valid password\",\n      \"expectedResult\": \"Password is accepted\"\n    },\n    {\n      \"stepNumber\": 4,\n      \"action\": \"Click login button\",\n      \"expectedResult\": \"User is authenticated and redirected to dashboard\"\n    }\n  ],\n  \"preconditions\": [\n    \"User is registered in the system\",\n    \"User has valid credentials\",\n    \"Login page is accessible\"\n  ],\n  \"expectedResults\": [\n    \"User successfully authenticates\",\n    \"Session is created\",\n    \"User is redirected to dashboard\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "generate-user-stories"]
+            },
+            "description": "Gera user stories a partir de um cenário de teste de login"
+          },
+          "response": [
+            {
+              "name": "Success - GitHub Models",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-ai-provider",
+                    "value": "github"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"User Login Authentication\",\n  \"description\": \"Verify that users can login with valid credentials\",\n  \"type\": \"functional\",\n  \"priority\": \"high\",\n  \"steps\": [\n    {\n      \"stepNumber\": 1,\n      \"action\": \"Navigate to login page\",\n      \"expectedResult\": \"Login page is displayed\"\n    }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "generate-user-stories"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"data\": {\n    \"userStories\": [\n      {\n        \"id\": \"US-001\",\n        \"title\": \"User Login\",\n        \"asA\": \"registered user\",\n        \"iWant\": \"to login with my credentials\",\n        \"soThat\": \"I can access my account securely\",\n        \"acceptanceCriteria\": [\n          \"User can enter email and password\",\n          \"System validates credentials\",\n          \"User is redirected to dashboard on success\"\n        ],\n        \"priority\": \"high\",\n        \"estimatedPoints\": 5\n      }\n    ]\n  },\n  \"metadata\": {\n    \"provider\": \"github\",\n    \"model\": \"gpt-4o\",\n    \"timestamp\": \"2026-01-19T10:30:00.000Z\"\n  },\n  \"savedTo\": \"user-story-user-login-authentication.json\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Generate from E-commerce Checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-ai-provider",
+                "value": "{{AI_PROVIDER}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Complete Purchase Checkout\",\n  \"description\": \"Verify that users can complete a purchase with credit card payment\",\n  \"type\": \"e2e\",\n  \"priority\": \"high\",\n  \"steps\": [\n    {\n      \"stepNumber\": 1,\n      \"action\": \"Add items to shopping cart\",\n      \"expectedResult\": \"Items appear in cart with correct pricing\"\n    },\n    {\n      \"stepNumber\": 2,\n      \"action\": \"Proceed to checkout\",\n      \"expectedResult\": \"Checkout page displays with order summary\"\n    },\n    {\n      \"stepNumber\": 3,\n      \"action\": \"Enter shipping address\",\n      \"expectedResult\": \"Address is validated and saved\"\n    },\n    {\n      \"stepNumber\": 4,\n      \"action\": \"Select shipping method\",\n      \"expectedResult\": \"Shipping cost is calculated and displayed\"\n    },\n    {\n      \"stepNumber\": 5,\n      \"action\": \"Enter credit card information\",\n      \"expectedResult\": \"Payment details are validated\"\n    },\n    {\n      \"stepNumber\": 6,\n      \"action\": \"Confirm and place order\",\n      \"expectedResult\": \"Order is processed and confirmation is displayed\"\n    }\n  ],\n  \"preconditions\": [\n    \"User is logged in\",\n    \"Items are available in inventory\",\n    \"Payment gateway is operational\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "generate-user-stories"]
+            },
+            "description": "Gera user stories para fluxo completo de checkout de e-commerce"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate with OpenAI",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-ai-provider",
+                "value": "openai"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Password Reset Flow\",\n  \"description\": \"Test password reset functionality via email\",\n  \"type\": \"functional\",\n  \"priority\": \"medium\",\n  \"steps\": [\n    {\n      \"stepNumber\": 1,\n      \"action\": \"Click forgot password link\",\n      \"expectedResult\": \"Password reset page is displayed\"\n    },\n    {\n      \"stepNumber\": 2,\n      \"action\": \"Enter email address\",\n      \"expectedResult\": \"Email is validated\"\n    },\n    {\n      \"stepNumber\": 3,\n      \"action\": \"Submit reset request\",\n      \"expectedResult\": \"Reset email is sent\"\n    },\n    {\n      \"stepNumber\": 4,\n      \"action\": \"Click reset link in email\",\n      \"expectedResult\": \"Reset password form is displayed\"\n    },\n    {\n      \"stepNumber\": 5,\n      \"action\": \"Enter new password\",\n      \"expectedResult\": \"Password is updated successfully\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "generate-user-stories"]
+            },
+            "description": "Gera user stories usando OpenAI GPT-4"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate with Anthropic Claude",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-ai-provider",
+                "value": "anthropic"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"User Profile Update\",\n  \"description\": \"Test user profile information update functionality\",\n  \"type\": \"functional\",\n  \"priority\": \"low\",\n  \"steps\": [\n    {\n      \"stepNumber\": 1,\n      \"action\": \"Navigate to profile settings\",\n      \"expectedResult\": \"Profile page displays current information\"\n    },\n    {\n      \"stepNumber\": 2,\n      \"action\": \"Update profile fields\",\n      \"expectedResult\": \"Changes are reflected in form\"\n    },\n    {\n      \"stepNumber\": 3,\n      \"action\": \"Save changes\",\n      \"expectedResult\": \"Profile is updated successfully\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "generate-user-stories"]
+            },
+            "description": "Gera user stories usando Anthropic Claude"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para geração de user stories a partir de cenários de teste"
+    },
+    {
+      "name": "Retrieve User Stories",
+      "item": [
+        {
+          "name": "List All User Stories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "user-stories"]
+            },
+            "description": "Retorna todas as user stories geradas e salvas no banco de dados"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/user-stories",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "user-stories"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"total\": 3,\n  \"data\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"createdAt\": \"2026-01-19T10:30:00.000Z\",\n      \"testScenario\": {\n        \"title\": \"User Login Authentication\",\n        \"type\": \"functional\"\n      },\n      \"userStories\": [...],\n      \"provider\": \"github\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User Story by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/user-stories?id=550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "user-stories"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "550e8400-e29b-41d4-a716-446655440000",
+                  "description": "ID da user story gerada"
+                }
+              ]
+            },
+            "description": "Retorna uma user story específica pelo ID"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/user-stories?id=550e8400-e29b-41d4-a716-446655440000",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "user-stories"],
+                  "query": [
+                    {
+                      "key": "id",
+                      "value": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"createdAt\": \"2026-01-19T10:30:00.000Z\",\n    \"testScenario\": {...},\n    \"userStories\": [...],\n    \"provider\": \"github\",\n    \"model\": \"gpt-4o\"\n  }\n}"
+            },
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/user-stories?id=invalid-id",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "user-stories"],
+                  "query": [
+                    {
+                      "key": "id",
+                      "value": "invalid-id"
+                    }
+                  ]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"User story not found\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Endpoints para recuperar user stories salvas no banco de dados"
+    },
+    {
+      "name": "Legacy Endpoints (Redirected)",
+      "item": [
+        {
+          "name": "Generate User Stories (Legacy)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-ai-provider",
+                "value": "{{AI_PROVIDER}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Scenario Title\",\n  \"description\": \"Test scenario description\",\n  \"type\": \"functional\",\n  \"steps\": [\n    {\n      \"stepNumber\": 1,\n      \"action\": \"Action description\",\n      \"expectedResult\": \"Expected result\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/generate-user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "generate-user-stories"]
+            },
+            "description": "Endpoint legado (sem /v1) - automaticamente redirecionado para /api/v1/generate-user-stories"
+          },
+          "response": []
+        },
+        {
+          "name": "List User Stories (Legacy)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "user-stories"]
+            },
+            "description": "Endpoint legado (sem /v1) - automaticamente redirecionado para /api/v1/user-stories"
+          },
+          "response": []
+        },
+        {
+          "name": "Swagger (Legacy)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/swagger",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "swagger"]
+            },
+            "description": "Endpoint legado - redirecionado para /api/v1/swagger"
+          },
+          "response": []
+        },
+        {
+          "name": "Docs (Legacy)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/docs",
+              "host": ["{{BASE_URL}}"],
+              "path": ["docs"]
+            },
+            "description": "Endpoint legado - redirecionado para /api/v1/api-docs"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints legados mantidos para compatibilidade - todos são redirecionados para /api/v1"
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Invalid Test Scenario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-ai-provider",
+                "value": "{{AI_PROVIDER}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Short\",\n  \"description\": \"Too short\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "generate-user-stories"]
+            },
+            "description": "Testa validação de entrada com dados inválidos"
+          },
+          "response": [
+            {
+              "name": "Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Short\"\n}"
+                },
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "generate-user-stories"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Validation failed\",\n  \"details\": [\n    {\n      \"field\": \"description\",\n      \"message\": \"Required\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Invalid AI Provider",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-ai-provider",
+                "value": "invalid-provider"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"User Login Authentication\",\n  \"description\": \"Verify that users can login with valid credentials\",\n  \"type\": \"functional\",\n  \"steps\": [\n    {\n      \"stepNumber\": 1,\n      \"action\": \"Navigate to login page\",\n      \"expectedResult\": \"Login page is displayed\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "generate-user-stories"]
+            },
+            "description": "Testa erro ao usar provider de AI inválido"
+          },
+          "response": []
+        },
+        {
+          "name": "Method Not Allowed (GET on POST endpoint)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "generate-user-stories"]
+            },
+            "description": "Testa erro 405 ao usar método HTTP incorreto"
+          },
+          "response": [
+            {
+              "name": "Method Not Allowed",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{BASE_URL}}/api/v1/generate-user-stories",
+                  "host": ["{{BASE_URL}}"],
+                  "path": ["api", "v1", "generate-user-stories"]
+                }
+              },
+              "status": "Method Not Allowed",
+              "code": 405,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Method not allowed\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Casos de teste para tratamento de erros"
+    },
+    {
+      "name": "Production",
+      "item": [
+        {
+          "name": "Health Check (Production)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{PROD_URL}}/api/v1/health",
+              "host": ["{{PROD_URL}}"],
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Health check no ambiente de produção Vercel"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate User Stories (Production)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-ai-provider",
+                "value": "github"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"User Login Authentication\",\n  \"description\": \"Verify that users can login with valid credentials\",\n  \"type\": \"functional\",\n  \"priority\": \"high\",\n  \"steps\": [\n    {\n      \"stepNumber\": 1,\n      \"action\": \"Navigate to login page\",\n      \"expectedResult\": \"Login page is displayed\"\n    },\n    {\n      \"stepNumber\": 2,\n      \"action\": \"Enter valid credentials\",\n      \"expectedResult\": \"Credentials are accepted\"\n    },\n    {\n      \"stepNumber\": 3,\n      \"action\": \"Click login button\",\n      \"expectedResult\": \"User is redirected to dashboard\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{PROD_URL}}/api/v1/generate-user-stories",
+              "host": ["{{PROD_URL}}"],
+              "path": ["api", "v1", "generate-user-stories"]
+            },
+            "description": "Gera user stories em produção usando GitHub Models"
+          },
+          "response": []
+        },
+        {
+          "name": "API Documentation (Production)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{PROD_URL}}/api/v1/api-docs",
+              "host": ["{{PROD_URL}}"],
+              "path": ["api", "v1", "api-docs"]
+            },
+            "description": "Acessa documentação Swagger em produção"
+          },
+          "response": []
+        }
+      ],
+      "description": "Requests para testar a API em produção (Vercel)"
+    }
+  ]
+}

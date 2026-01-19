@@ -20,6 +20,46 @@ This agent specializes in transforming test scenarios into well-structured Agile
 - ✅ Produces backlog-ready stories for team execution
 - ✅ RESTful API with **Swagger documentation**
 - ✅ Auto-save to database
+- ✅ **API Versioning** - All endpoints under /api/v1
+- ✅ **Health Check** - Monitor API status
+- ✅ **Postman Collection** - Ready-to-use API testing
+
+## 📚 API Documentation
+
+Access the interactive Swagger documentation:
+
+- **Local**: http://localhost:3001/api/v1/api-docs
+- **Production**: https://user-story-generator-agent.vercel.app/api/v1/api-docs
+
+**Legacy endpoints** (redirected to v1):
+
+- http://localhost:3001/docs → /api/v1/api-docs
+- http://localhost:3001/ → /api/v1/api-docs
+
+The Swagger UI provides:
+
+- Complete API reference with OpenAPI 3.0
+- Interactive request/response testing
+- Request/response examples
+- Schema definitions with Zod validation
+- Try-it-out functionality
+- Multiple AI provider support
+
+### API Versioning
+
+All endpoints are versioned under `/api/v1` for stability and backward compatibility. Legacy non-versioned endpoints are automatically redirected to v1.
+
+### Postman Collection
+
+Import the complete API collection: [postman-collection.json](postman-collection.json)
+
+The collection includes:
+
+- All API endpoints with examples
+- Environment variables for local/production
+- Pre-configured headers and authentication
+- Test scenarios for error cases
+- 6 organized folders with 16+ requests
 
 ## Installation
 
@@ -84,19 +124,45 @@ This will demonstrate:
 ### Local Development
 
 ```bash
-npm run dev
+npm start
 ```
 
-The server will start at `http://localhost:3000`
+The server will start at `http://localhost:3001` using Vercel Dev
 
-**Access the API Documentation:** `http://localhost:3000/docs`
+**Access the API Documentation:** `http://localhost:3001/api/v1/api-docs`
+
+### API Endpoints
+
+#### Health Check
+
+```bash
+curl http://localhost:3001/api/v1/health
+```
+
+Returns API status, version, and available endpoints:
+
+```json
+{
+  "status": "ok",
+  "service": "user-story-generator-agent",
+  "version": "1.0.0",
+  "apiVersion": "v1",
+  "timestamp": "2026-01-19T10:30:00.000Z",
+  "endpoints": {
+    "generateUserStories": "/api/v1/generate-user-stories",
+    "userStories": "/api/v1/user-stories",
+    "swagger": "/api/v1/swagger",
+    "docs": "/api/v1/api-docs"
+  }
+}
+```
 
 ### API Examples
 
-#### Generate User Stories (using GitHub Models)
+#### Generate User Stories (using GitHub Models - Free!)
 
 ```bash
-curl -X POST http://localhost:3000/api/generate-user-stories \
+curl -X POST http://localhost:3001/api/v1/generate-user-stories \
   -H "Content-Type: application/json" \
   -H "x-ai-provider: github" \
   -d '{
@@ -116,17 +182,44 @@ curl -X POST http://localhost:3000/api/generate-user-stories \
   }'
 ```
 
+#### Using OpenAI
+
+```bash
+curl -X POST http://localhost:3001/api/v1/generate-user-stories \
+  -H "Content-Type: application/json" \
+  -H "x-ai-provider: openai" \
+  -d '{...}'
+```
+
+#### Using Anthropic Claude
+
+```bash
+curl -X POST http://localhost:3001/api/v1/generate-user-stories \
+  -H "Content-Type: application/json" \
+  -H "x-ai-provider: anthropic" \
+  -d '{...}'
+```
+
 #### List Generated User Stories
 
 ```bash
-curl http://localhost:3000/api/user-stories
+curl http://localhost:3001/api/v1/user-stories
 ```
 
 #### Get Specific User Story by ID
 
 ```bash
-curl http://localhost:3000/api/user-stories?id=your-uuid-here
+curl "http://localhost:3001/api/v1/user-stories?id=your-uuid-here"
 ```
+
+#### View API Documentation
+
+```bash
+# Open in browser
+open http://localhost:3001/api/v1/api-docs
+```
+
+**Legacy Endpoints**: All non-versioned endpoints (e.g., `/api/generate-user-stories`) are automatically redirected to `/api/v1/*`
 
 ### Testing
 
@@ -168,10 +261,19 @@ bash scripts/setup-github-secrets.sh
 
 ## 📚 Documentation
 
+- [API Documentation (Swagger UI)](http://localhost:3001/api/v1/api-docs) - Interactive API documentation
+- [OpenAPI Specification](http://localhost:3001/api/v1/swagger) - OpenAPI 3.0 JSON spec
+- [Postman Collection](./postman-collection.json) - Import into Postman for testing
 - [CI/CD Setup Guide](./.github/DEPLOY.md) - GitHub Actions and Vercel deployment
 - [GitHub Integration Guide](./docs/GITHUB_INTEGRATION.md) - Complete guide for using GitHub Models
-- [API Documentation](./src/controllers/README.md) - REST API reference
-- [Swagger/OpenAPI](http://localhost:3000/docs) - Interactive API documentation
+- [API Reference](./src/controllers/README.md) - REST API technical reference
+
+### Quick Links
+
+- **Production API**: https://user-story-generator-agent.vercel.app/api/v1/api-docs
+- **Health Check**: GET /api/v1/health
+- **Generate User Stories**: POST /api/v1/generate-user-stories
+- **List User Stories**: GET /api/v1/user-stories
 
 ## License
 
